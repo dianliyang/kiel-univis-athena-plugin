@@ -59,6 +59,7 @@ test('dedupes assigned lecture pages and keeps the authoritative schedule range'
       'https://univis.uni-kiel.de/formbot/dsc_3Danew_2Ftlecture_26tdir_3Dtechn_2Finfora_2Fmaster_26lang_3Den_26ref_3Dtlecture_26sem_3D2026s',
       overviewHtml,
     ],
+    ['https://univis.uni-kiel.de/category', categoryHtml],
     ['https://univis.uni-kiel.de/category-assigned', categoryHtml],
     ['https://univis.uni-kiel.de/detail', detailHtml],
     ['https://univis.uni-kiel.de/form?exercise=infEdTechExercise', assignedHtml],
