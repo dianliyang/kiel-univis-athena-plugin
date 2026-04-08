@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.mjs",
+    "test": "node --test tests/unit/*.mjs",
     "build": "node --check index.mjs"
   }
 }

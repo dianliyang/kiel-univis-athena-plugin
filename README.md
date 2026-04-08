@@ -2,6 +2,9 @@
 
 Standalone Athena plugin for importing courses, schedules, and exam dates from Kiel UnivIS.
 
+To use this plugin with Athena, copy the repository into Athena's plugin directory as
+`plugins/kiel-univis-courses` or point Athena at the extracted repo when loading local plugins.
+
 ## Development
 
 - `npm test`
