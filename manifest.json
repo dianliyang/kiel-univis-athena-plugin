@@ -1,0 +1,22 @@
+{
+  "id": "kiel-univis-courses",
+  "name": "Kiel UnivIS Courses",
+  "version": "1.0.0",
+  "description": "Syncs courses, schedules, and exam dates from Kiel UnivIS into Athena.",
+  "author": "Athena",
+  "capabilities": [
+    "writeCourses",
+    "writeSchedules"
+  ],
+  "permissions": {
+    "getConfig": true,
+    "setConfig": false,
+    "readContent": false,
+    "fetch": true
+  },
+  "network": {
+    "domains": [
+      "univis.uni-kiel.de"
+    ]
+  }
+}
