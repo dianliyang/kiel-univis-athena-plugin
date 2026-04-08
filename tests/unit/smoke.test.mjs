@@ -4,7 +4,7 @@ import test from 'node:test'
 
 import plugin from '../../index.mjs'
 
-test('exports the kiel univis plugin manifest', () => {
+test('exports the kiel univis plugin runtime entrypoints', () => {
   assert.equal(typeof plugin.pull, 'function')
   assert.equal(typeof plugin.push, 'function')
 })
