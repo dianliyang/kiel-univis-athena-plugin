@@ -24,10 +24,11 @@ export async function fetchKielUnivisCourses({
   fetchImpl = fetch,
   language = 'en',
   semester = '2026s',
+  requestPath = '/formbot',
   sourceBaseUrl = 'https://univis.uni-kiel.de',
 } = {}) {
   const overviewResponse = await fetchImpl(
-    buildKielOverviewUrl({ language, semester }),
+    buildKielOverviewUrl({ language, semester, requestPath }),
   )
   const overviewHtml = await readHtmlResponse(overviewResponse)
   const categories = parseOverviewCategories(

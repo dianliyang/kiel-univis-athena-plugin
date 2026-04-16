@@ -72,6 +72,50 @@ test('pull returns the Athena plugin envelope with imported course data', async 
   )
 })
 
+test('pull uses a configurable request path while keeping the fixed UnivIS host', async () => {
+  const overviewHtml = await readFixture('overview-fetch-response.html')
+  const categoryHtml = await readFixture('category-fetch-response.html')
+  const detailHtml = await readFixture('detail-fetch-response.html')
+  const responses = [overviewHtml, categoryHtml, detailHtml]
+  const requestedUrls = []
+
+  await plugin.pull({
+    async getConfig() {
+      return {
+        language: 'en',
+        semester: '2026s',
+        requestPath: '/catalog',
+      }
+    },
+    async fetch({ url, method }) {
+      requestedUrls.push({ url, method })
+      const bodyText = responses.shift()
+      if (!bodyText) {
+        throw new Error(`Unexpected fetch: ${url}`)
+      }
+
+      return {
+        status: 200,
+        finalUrl: url,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+        },
+        bodyText,
+      }
+    },
+  })
+
+  assert.match(
+    requestedUrls[0].url,
+    /^https:\/\/univis\.uni-kiel\.de\/catalog\//,
+  )
+  assert.equal(new URL(requestedUrls[0].url).hostname, 'univis.uni-kiel.de')
+  assert.deepEqual(
+    requestedUrls.map(request => request.method),
+    ['GET', 'GET', 'GET'],
+  )
+})
+
 test('push returns Athena-compatible summary and ignores sessions', async () => {
   const result = await plugin.push(
     {},

@@ -9,6 +9,7 @@ import {
 import {
   getExamDisplayLabel,
   getSessionTypeForKind,
+  mapKindToCategory,
 } from './univis-normalize.mjs'
 
 function slugify(value) {
@@ -125,6 +126,7 @@ export function buildKielCourseImport(
         recurrenceUntil,
         timezone: KIEL_SOURCE_TIMEZONE,
         location: normalizedLocation,
+        category: mapKindToCategory(schedule.kindLabel),
         sessionType: getSessionTypeForKind(schedule.kindLabel),
         notes: null,
         metadata: null,
@@ -161,6 +163,7 @@ export function buildKielCourseImport(
         recurrenceUntil: endAt,
         timezone: KIEL_SOURCE_TIMEZONE,
         location: 'TBD',
+        category: mapKindToCategory('Exam'),
         sessionType: 'review',
         notes: null,
         metadata: null,

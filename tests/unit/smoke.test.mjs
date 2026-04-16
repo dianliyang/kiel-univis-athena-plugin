@@ -19,4 +19,21 @@ test('ships the expected manifest metadata', async () => {
   assert.ok(manifest.permissions)
   assert.equal(manifest.permissions.getConfig, true)
   assert.equal(manifest.permissions.fetch, true)
+  assert.ok(
+    plugin.config.some(
+      field =>
+        field.key === 'requestPath'
+        && field.defaultValue === '/formbot',
+    ),
+  )
+})
+
+test('defines a release packaging script for install-ready zip assets', async () => {
+  const pkg = JSON.parse(
+    await fs.readFile(new URL('../../package.json', import.meta.url), 'utf8'),
+  )
+
+  assert.equal(typeof pkg.scripts['package:release'], 'string')
+  assert.match(pkg.scripts['package:release'], /zip/i)
+  assert.match(pkg.scripts['package:release'], /manifest\.json/)
 })

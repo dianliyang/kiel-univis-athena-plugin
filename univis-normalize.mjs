@@ -49,6 +49,39 @@ export function isExerciseTitle(value) {
   )
 }
 
+export function mapKindToCategory(kindLabel) {
+  const normalized = kindLabel?.trim().toLowerCase()
+
+  switch (normalized) {
+    case 'lecture':
+      return 'academic.lecture'
+    case 'seminar':
+      return 'academic.seminar'
+    case 'tutorial':
+      return 'academic.tutorial'
+    case 'exercise':
+      return 'academic.exercise'
+    case 'practical exercise':
+    case 'lab':
+    case 'laboratory':
+      return 'academic.lab'
+    case 'study':
+      return 'academic.study'
+    case 'reading':
+      return 'academic.reading'
+    case 'project':
+      return 'academic.project'
+    case 'meeting':
+      return 'academic.meeting'
+    case 'review':
+      return 'academic.review'
+    case 'exam':
+      return 'academic.exam'
+    default:
+      return 'academic.course'
+  }
+}
+
 export function getSessionTypeForKind(kindLabel) {
   if (/^Practical Exercise$/i.test(kindLabel)) {
     return 'lab'

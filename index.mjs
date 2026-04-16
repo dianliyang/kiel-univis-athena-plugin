@@ -24,6 +24,14 @@ export default {
         { value: '2025w', label: '2025 Winter' },
       ],
     },
+    {
+      key: 'requestPath',
+      label: 'Request Path',
+      type: 'text',
+      defaultValue: '/formbot',
+      placeholder: '/formbot',
+      description: 'Override the UnivIS request path while keeping the host fixed to univis.uni-kiel.de.',
+    },
   ],
   async pull(context) {
     const config = (await context.getConfig()) ?? {}
@@ -46,6 +54,10 @@ export default {
       },
       language: typeof config.language === 'string' ? config.language : 'en',
       semester: typeof config.semester === 'string' ? config.semester : '2026s',
+      requestPath:
+        typeof config.requestPath === 'string' && config.requestPath.trim().length > 0
+          ? config.requestPath
+          : '/formbot',
     })
 
     return {

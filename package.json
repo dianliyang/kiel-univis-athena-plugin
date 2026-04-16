@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/unit/*.mjs",
-    "build": "node --check index.mjs"
+    "build": "node --check index.mjs",
+    "package:release": "rm -rf release && mkdir -p release/kiel-univis-courses && cp index.mjs lib.mjs assigned-resolution.mjs athena-map.mjs entities.mjs manifest.json time.mjs univis-normalize.mjs univis-parse.mjs release/kiel-univis-courses/ && cd release && zip -rq kiel-univis-courses.zip kiel-univis-courses"
   }
 }

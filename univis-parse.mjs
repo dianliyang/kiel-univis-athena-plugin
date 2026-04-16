@@ -18,9 +18,18 @@ import {
 export function buildKielOverviewUrl({
   language = 'en',
   semester = '2026s',
+  requestPath = '/formbot',
 } = {}) {
   const dsc = `dsc=anew/tlecture&tdir=techn/infora/master&lang=${language}&ref=tlecture&sem=${semester}`
-  return `https://univis.uni-kiel.de/formbot/${encodeURIComponent(dsc).replace(/%/g, '_')}`
+  const trimmedRequestPath = `${requestPath}`.trim()
+  const normalizedRequestPath = !trimmedRequestPath || trimmedRequestPath === '/'
+    ? '/formbot/'
+    : `${trimmedRequestPath.startsWith('/') ? trimmedRequestPath : `/${trimmedRequestPath}`}${trimmedRequestPath.endsWith('/') ? '' : '/'}`
+
+  return new URL(
+    `${normalizedRequestPath}${encodeURIComponent(dsc).replace(/%/g, '_')}`,
+    'https://univis.uni-kiel.de',
+  ).toString()
 }
 
 export function parseOverviewCategories(html, sourceBaseUrl) {
