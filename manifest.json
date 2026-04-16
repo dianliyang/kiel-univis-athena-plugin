@@ -1,7 +1,7 @@
 {
   "id": "kiel-univis-courses",
   "name": "Kiel UnivIS Courses",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Syncs courses, schedules, and exam dates from Kiel UnivIS into Athena.",
   "author": "Athena",
   "capabilities": [
