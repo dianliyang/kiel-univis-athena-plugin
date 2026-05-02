@@ -4,8 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/unit/*.mjs",
-    "build": "node --check index.mjs",
-    "package:release": "rm -rf release && mkdir -p release/kiel-univis-courses && cp index.mjs lib.mjs assigned-resolution.mjs athena-map.mjs entities.mjs manifest.json time.mjs univis-normalize.mjs univis-parse.mjs release/kiel-univis-courses/ && cd release && zip -rq kiel-univis-courses.zip kiel-univis-courses"
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:node:*",
+    "test": "tsx --test tests/unit/*.test.ts",
+    "package:release": "rm -rf release && mkdir -p release/kiel-univis-courses && npm run build && cp dist/index.mjs manifest.json release/kiel-univis-courses/ && cd release && zip -rq kiel-univis-courses.zip kiel-univis-courses"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "esbuild": "^0.28.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
   }
 }
