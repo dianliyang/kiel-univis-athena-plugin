@@ -90,7 +90,7 @@ test('dedupes assigned lecture pages and keeps the authoritative schedule range'
   })
 
   const exerciseSchedules = imported.schedules.filter(
-    schedule => schedule.sessionType === 'tutorial',
+    schedule => schedule.metadata?.sessionType === 'tutorial',
   )
 
   assert.equal(
