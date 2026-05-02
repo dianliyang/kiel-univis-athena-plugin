@@ -2,9 +2,7 @@ import { extractUrls } from './entities.mjs'
 import {
   findFirstOccurrenceDate,
   KIEL_SOURCE_TIMEZONE,
-  toAllDayEndIso,
-  toAllDayStartIso,
-  zonedDateTimeToIso,
+  parseDateOnly,
 } from './time.mjs'
 import {
   getExamDisplayLabel,
@@ -26,11 +24,33 @@ function buildCourseId(university, detail) {
 }
 
 function getScheduleSortRank(schedule) {
-  if (schedule.sessionType === 'review') {
+  const sessionType = schedule.metadata?.sessionType
+  if (sessionType === 'review') {
     return 0
   }
 
   return schedule.allDay ? 2 : 1
+}
+
+function parseKielSemester(semester) {
+  if (!semester) {
+    return null
+  }
+
+  const match = semester.match(/^(\d{4})([sw])$/i)
+  if (!match) {
+    return { label: semester }
+  }
+
+  const year = Number.parseInt(match[1], 10)
+  const isSummer = match[2].toLowerCase() === 's'
+  const term = isSummer ? 'Summer' : 'Winter'
+
+  return {
+    term,
+    year,
+    label: `${term} ${year}`,
+  }
 }
 
 export function buildKielCourseImport(
@@ -41,6 +61,8 @@ export function buildKielCourseImport(
   const courses = []
   const schedules = []
   const sessions = []
+
+  const latestSemester = parseKielSemester(latestTerm)
 
   for (const detail of lectureDetails) {
     const description = detail.description || null
@@ -60,7 +82,7 @@ export function buildKielCourseImport(
       level: 'master',
       credit: detail.credit,
       instructors: detail.instructors,
-      latestSemester: latestTerm ? { label: latestTerm } : null,
+      latestSemester,
       description,
       url: detail.url,
       topics: [],
@@ -88,27 +110,6 @@ export function buildKielCourseImport(
       const hasConcreteTime = !!schedule.startTime && !!schedule.endTime
       const normalizedStartAt = hasConcreteTime ? schedule.startTime : '00:00'
       const normalizedEndAt = hasConcreteTime ? schedule.endTime : '23:59'
-      const startAt = hasConcreteTime
-        ? zonedDateTimeToIso(
-            firstDate,
-            schedule.startTime,
-            KIEL_SOURCE_TIMEZONE,
-          )
-        : toAllDayStartIso(firstDate)
-      const endAt = hasConcreteTime
-        ? zonedDateTimeToIso(firstDate, schedule.endTime, KIEL_SOURCE_TIMEZONE)
-        : toAllDayEndIso(firstDate)
-      const recurrenceUntil = hasConcreteTime
-        ? zonedDateTimeToIso(
-            schedule.endDate,
-            schedule.endTime,
-            KIEL_SOURCE_TIMEZONE,
-          )
-        : toAllDayEndIso(schedule.endDate)
-
-      if (!startAt || !endAt) {
-        continue
-      }
 
       schedules.push({
         id: `schedule-${slugify(`${courseId}-${schedule.kindLabel}-${index}`)}`,
@@ -123,13 +124,14 @@ export function buildKielCourseImport(
         endAt: normalizedEndAt,
         startDate: schedule.startDate,
         endDate: schedule.endDate,
-        recurrenceUntil,
+        recurrenceUntil: schedule.endDate,
         timezone: KIEL_SOURCE_TIMEZONE,
         location: normalizedLocation,
         category: mapKindToCategory(schedule.kindLabel),
-        sessionType: getSessionTypeForKind(schedule.kindLabel),
         notes: null,
-        metadata: null,
+        metadata: {
+          sessionType: getSessionTypeForKind(schedule.kindLabel),
+        },
         createdAt: nowIso,
         updatedAt: nowIso,
       })
@@ -138,35 +140,37 @@ export function buildKielCourseImport(
     for (const [index, exam] of detail.exams.entries()) {
       const examDisplayLabel = getExamDisplayLabel(exam.label)
       const allDay = !exam.startTime || !exam.endTime
-      const startAt = allDay
-        ? toAllDayStartIso(exam.date)
-        : zonedDateTimeToIso(exam.date, exam.startTime, KIEL_SOURCE_TIMEZONE)
-      const endAt = allDay
-        ? toAllDayEndIso(exam.date)
-        : zonedDateTimeToIso(exam.date, exam.endTime, KIEL_SOURCE_TIMEZONE)
+      const normalizedStartAt = allDay ? '00:00' : exam.startTime
+      const normalizedEndAt = allDay ? '23:59' : exam.endTime
 
-      if (!startAt || !endAt) {
+      const dateParts = parseDateOnly(exam.date)
+      if (!dateParts) {
         continue
       }
+
+      const dayOfWeek = new Date(
+        Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day),
+      ).getUTCDay()
 
       schedules.push({
         id: `schedule-${slugify(`${courseId}-${exam.label}-${index}`)}`,
         entityType: 'course',
         entityId: courseId,
         title: `${detail.title} · ${examDisplayLabel}`,
-        dayOfWeek: new Date(startAt).getUTCDay(),
+        dayOfWeek,
         allDay,
-        startAt,
-        endAt,
+        startAt: normalizedStartAt,
+        endAt: normalizedEndAt,
         startDate: exam.date,
         endDate: exam.date,
-        recurrenceUntil: endAt,
+        recurrenceUntil: exam.date,
         timezone: KIEL_SOURCE_TIMEZONE,
         location: 'TBD',
         category: mapKindToCategory('Exam'),
-        sessionType: 'review',
         notes: null,
-        metadata: null,
+        metadata: {
+          sessionType: 'review',
+        },
         createdAt: nowIso,
         updatedAt: nowIso,
       })
@@ -187,3 +191,4 @@ export function buildKielCourseImport(
     ),
   }
 }
+
