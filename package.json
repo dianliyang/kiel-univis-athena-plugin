@@ -1,17 +1,25 @@
 {
   "name": "kiel-univis-athena-plugin",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:node:*",
+    "build": "esbuild src/mcp.ts --bundle --platform=node --format=esm --outfile=dist/mcp.mjs --external:node:* --banner:js='#!/usr/bin/env node'",
     "test": "tsx --test tests/unit/*.test.ts",
-    "package:release": "rm -rf release && mkdir -p release/kiel-univis-courses && npm run build && cp dist/index.mjs manifest.json release/kiel-univis-courses/ && cd release && zip -rq kiel-univis-courses.zip kiel-univis-courses"
+    "package:release": "rm -rf release && mkdir -p release/kiel-univis-mcp && npm run build && cp dist/mcp.mjs package.json README.md release/kiel-univis-mcp/ && cd release && zip -rq kiel-univis-mcp.zip kiel-univis-mcp",
+    "build:plugin": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:node:*"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "esbuild": "^0.28.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  },
+  "bin": {
+    "kiel-univis-mcp": "dist/mcp.mjs"
   }
 }

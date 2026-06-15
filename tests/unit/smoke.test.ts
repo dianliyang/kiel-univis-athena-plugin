@@ -29,12 +29,13 @@ test('ships the expected manifest metadata', async () => {
   )
 })
 
-test('defines a release packaging script for install-ready zip assets', async () => {
+test('defines a release packaging script for an MCP server zip asset', async () => {
   const pkg = JSON.parse(
     await fs.readFile(new URL('../../package.json', import.meta.url), 'utf8'),
   )
 
   assert.equal(typeof pkg.scripts['package:release'], 'string')
   assert.match(pkg.scripts['package:release'], /zip/i)
-  assert.match(pkg.scripts['package:release'], /manifest\.json/)
+  assert.match(pkg.scripts['package:release'], /dist\/mcp\.mjs/)
+  assert.equal(pkg.bin['kiel-univis-mcp'], 'dist/mcp.mjs')
 })

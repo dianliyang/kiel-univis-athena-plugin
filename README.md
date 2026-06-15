@@ -1,9 +1,14 @@
-# Kiel UnivIS Athena Plugin
+# Kiel UnivIS Courses MCP Server
 
-Standalone Athena agent-tool plugin for retrieving course, schedule, and exam information from Kiel UnivIS.
+MCP server for retrieving course, schedule, and exam information from Kiel UnivIS.
+It is read-only: tools return course information for review and do not import or mutate Athena data.
 
-To use this plugin with Athena, copy the repository into Athena's plugin directory as
-`plugins/kiel-univis-courses`.
+## Tools
+
+- `list_kiel_univis_courses`: retrieve the Kiel UnivIS course list for a semester.
+- `search_kiel_univis_courses`: retrieve the course list and filter it by title, code, instructor, topic, language, or category.
+
+Both tools accept optional `language`, `semester`, and `requestPath` arguments. The UnivIS host stays fixed to `univis.uni-kiel.de`.
 
 ## Development
 
@@ -11,12 +16,19 @@ To use this plugin with Athena, copy the repository into Athena's plugin directo
 - `npm run build`
 - `npm run package:release`
 
-## Notes
+## Local MCP Usage
 
-This repo is intentionally Athena-first. It vendors only the plugin-side code needed to run and test the UnivIS import flow outside the Athena app repository.
+Build the server, then point an MCP client at `dist/mcp.mjs`:
+
+```json
+{
+  "command": "node",
+  "args": ["/absolute/path/to/kiel-univis-athena-plugin/dist/mcp.mjs"]
+}
+```
+
+Athena can also override its local Kiel MCP path with `ATHENA_KIEL_UNIVIS_MCP_PATH`.
 
 ## Release Packaging
 
-Run `npm run package:release` to build an install-ready `release/kiel-univis-courses.zip`
-archive for GitHub Releases. The archive contains a single `kiel-univis-courses/`
-plugin root with `manifest.json` and the runtime `.mjs` files Athena expects.
+Run `npm run package:release` to build `release/kiel-univis-mcp.zip` for GitHub Releases. The archive contains `dist/mcp.mjs`, `package.json`, and this README.
