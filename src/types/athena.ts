@@ -75,26 +75,22 @@ export interface PluginContext {
   }>
 }
 
-export interface PluginPullResult {
-  protocolVersion: string
-  courses?: CourseRecord[]
-  schedules?: ScheduleRecord[]
-  sessions?: SessionRecord[]
+export interface PluginToolResult {
+  content: string
+  data?: Record<string, unknown>
   warnings?: string[]
 }
 
-export interface PluginPushPayload {
+export interface PluginToolDefinition {
+  name: string
+  description: string
+  parameters: Record<string, unknown>
+  execute: (context: PluginContext, input?: Record<string, unknown>) => Promise<PluginToolResult>
+}
+
+export interface KielUnivisImportData {
   courses?: CourseRecord[]
   schedules?: ScheduleRecord[]
   sessions?: SessionRecord[]
-}
-
-export interface PluginPushResult {
-  protocolVersion: string
-  summary: {
-    courses: number
-    schedules: number
-    sessions: number
-  }
   warnings?: string[]
 }

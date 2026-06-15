@@ -2,16 +2,14 @@
   "id": "kiel-univis-courses",
   "name": "Kiel UnivIS Courses",
   "version": "0.1.4",
-  "description": "Syncs courses, schedules, and exam dates from Kiel UnivIS into Athena.",
+  "description": "Provides agent tools for importing courses, schedules, and exam dates from Kiel UnivIS.",
   "author": "Athena",
   "capabilities": [
-    "writeCourses",
-    "writeSchedules"
+    "agentTools"
   ],
   "permissions": {
     "getConfig": true,
     "setConfig": false,
-    "readContent": false,
     "fetch": true
   },
   "network": {

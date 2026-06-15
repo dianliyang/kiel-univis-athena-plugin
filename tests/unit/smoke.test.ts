@@ -4,9 +4,10 @@ import test from 'node:test'
 
 import plugin from '../../src/index.js'
 
-test('exports the kiel univis plugin runtime entrypoints', () => {
-  assert.equal(typeof plugin.pull, 'function')
-  assert.equal(typeof plugin.push, 'function')
+test('exports the kiel univis plugin agent tool runtime', () => {
+  assert.equal(Array.isArray(plugin.tools), true)
+  assert.equal(plugin.tools[0].name, 'import_kiel_univis_courses')
+  assert.equal(typeof plugin.tools[0].execute, 'function')
 })
 
 test('ships the expected manifest metadata', async () => {

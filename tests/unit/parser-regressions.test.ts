@@ -16,7 +16,7 @@ test('pulls a course from overview, category, and detail fixtures', async () => 
   const detailHtml = await readFixture('detail-fetch-response.html')
   const responses = [overviewHtml, categoryHtml, detailHtml]
 
-  const result = await plugin.pull({
+  const result = await plugin.tools[0].execute({
     async getConfig() {
       return {
         language: 'en',
@@ -40,10 +40,12 @@ test('pulls a course from overview, category, and detail fixtures', async () => 
     },
   } as any)
 
-  assert.equal(result.courses!.length, 1)
-  assert.equal(result.courses![0].code, 'infAdvCry-01a')
-  assert.equal(result.courses![0].title, 'Advanced Cryptography')
-  assert.equal(result.schedules!.length, 3)
+  const data = result.data as any
+
+  assert.equal(data.courses.length, 1)
+  assert.equal(data.courses[0].code, 'infAdvCry-01a')
+  assert.equal(data.courses[0].title, 'Advanced Cryptography')
+  assert.equal(data.schedules.length, 3)
 })
 
 test('dedupes assigned lecture pages and keeps the authoritative schedule range', async () => {

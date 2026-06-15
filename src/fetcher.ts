@@ -9,7 +9,7 @@ import {
   parseLectureDetailHtml,
   parseOverviewCategories,
 } from './parsing/univis-parse.js'
-import { PluginPullResult } from './types/athena.js'
+import { KielUnivisImportData } from './types/athena.js'
 
 export async function fetchKielUnivisCourses({
   fetchImpl = fetch,
@@ -23,7 +23,7 @@ export async function fetchKielUnivisCourses({
   semester?: string
   requestPath?: string
   sourceBaseUrl?: string
-} = {}): Promise<PluginPullResult> {
+} = {}): Promise<KielUnivisImportData> {
   const overviewResponse = await fetchImpl(
     buildKielOverviewUrl({ language, semester, requestPath }),
   )

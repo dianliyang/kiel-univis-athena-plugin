@@ -1,5 +1,68 @@
 import { fetchKielUnivisCourses } from './fetcher.js'
-import { PluginContext, PluginPullResult, PluginPushPayload, PluginPushResult } from './types/athena.js'
+import { PluginContext, PluginToolResult } from './types/athena.js'
+
+function getStringOption(
+  input: Record<string, unknown> | undefined,
+  config: Record<string, unknown>,
+  key: string,
+  fallback: string,
+) {
+  const inputValue = input?.[key]
+  if (typeof inputValue === 'string' && inputValue.trim().length > 0) {
+    return inputValue.trim()
+  }
+
+  const configValue = config[key]
+  if (typeof configValue === 'string' && configValue.trim().length > 0) {
+    return configValue.trim()
+  }
+
+  return fallback
+}
+
+async function importKielUnivisCourses(
+  context: PluginContext,
+  input?: Record<string, unknown>,
+): Promise<PluginToolResult> {
+  const config = (await context.getConfig()) ?? {}
+  const result = await fetchKielUnivisCourses({
+    fetchImpl: async (requestUrl) => {
+      const response = await context.fetch({
+        url: String(requestUrl),
+        method: 'GET',
+      })
+      return {
+        headers: {
+          get(name: string) {
+            return response.headers[String(name).toLowerCase()] ?? null
+          },
+        },
+        async text() {
+          return response.bodyText
+        },
+      }
+    },
+    language: getStringOption(input, config, 'language', 'en'),
+    semester: getStringOption(input, config, 'semester', '2026s'),
+    requestPath: getStringOption(input, config, 'requestPath', '/formbot'),
+  })
+  const warnings = result.warnings ?? []
+  const courseCount = result.courses?.length ?? 0
+  const scheduleCount = result.schedules?.length ?? 0
+  const warningText = warnings.length > 0
+    ? ` ${warnings.length} warning(s) were returned.`
+    : ''
+
+  return {
+    content: `Imported ${courseCount} Kiel UnivIS course(s) and ${scheduleCount} schedule(s).${warningText}`,
+    data: {
+      courses: result.courses ?? [],
+      schedules: result.schedules ?? [],
+      warnings,
+    },
+    warnings,
+  }
+}
 
 export default {
   config: [
@@ -35,59 +98,31 @@ export default {
     },
   ],
 
-  async pull(context: PluginContext): Promise<PluginPullResult> {
-    const config = (await context.getConfig()) ?? {}
-    const result = await fetchKielUnivisCourses({
-      fetchImpl: async (input) => {
-        const response = await context.fetch({
-          url: String(input),
-          method: 'GET',
-        })
-        return {
-          headers: {
-            get(name: string) {
-              return response.headers[String(name).toLowerCase()] ?? null
-            },
+  tools: [
+    {
+      name: 'import_kiel_univis_courses',
+      description: 'Import Kiel University courses, schedules, and exam dates from UnivIS.',
+      parameters: {
+        type: 'object',
+        properties: {
+          language: {
+            type: 'string',
+            enum: ['en', 'de'],
+            description: 'Preferred UnivIS language for this import.',
           },
-          async text() {
-            return response.bodyText
+          semester: {
+            type: 'string',
+            enum: ['2026s', '2026w', '2025s', '2025w'],
+            description: 'UnivIS semester identifier to import.',
           },
-        }
+          requestPath: {
+            type: 'string',
+            description: 'Optional UnivIS request path. The host remains univis.uni-kiel.de.',
+          },
+        },
+        additionalProperties: false,
       },
-      language: typeof config.language === 'string' ? config.language : 'en',
-      semester: typeof config.semester === 'string' ? config.semester : '2026s',
-      requestPath:
-        typeof config.requestPath === 'string' && config.requestPath.trim().length > 0
-          ? config.requestPath
-          : '/formbot',
-    })
-
-    return {
-      protocolVersion: 'v1',
-      ...result,
-      warnings: result.warnings ?? [],
-    }
-  },
-
-  async push(_context: PluginContext, payload: PluginPushPayload): Promise<PluginPushResult> {
-    const warnings = [
-      'Kiel UnivIS push is metadata-only. Remote UnivIS data was not modified.',
-    ]
-
-    if ((payload.sessions?.length ?? 0) > 0) {
-      warnings.push(
-        `Ignored ${payload.sessions!.length} session record(s) because the plugin does not write sessions.`,
-      )
-    }
-
-    return {
-      protocolVersion: 'v1',
-      summary: {
-        courses: payload.courses?.length ?? 0,
-        schedules: payload.schedules?.length ?? 0,
-        sessions: 0,
-      },
-      warnings,
-    }
-  },
+      execute: importKielUnivisCourses,
+    },
+  ],
 }

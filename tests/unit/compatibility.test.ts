@@ -8,16 +8,15 @@ async function readFixture(name: string) {
   return fs.readFile(new URL(`../../fixtures/${name}`, import.meta.url), 'utf8')
 }
 
-test('declares the expected Athena manifest compatibility fields', async () => {
+test('declares the expected Athena agent tool manifest fields', async () => {
   const manifest = JSON.parse(
     await fs.readFile(new URL('../../manifest.json', import.meta.url), 'utf8'),
   )
 
-  assert.deepEqual(manifest.capabilities, ['writeCourses', 'writeSchedules'])
+  assert.deepEqual(manifest.capabilities, ['agentTools'])
   assert.deepEqual(manifest.permissions, {
     getConfig: true,
     setConfig: false,
-    readContent: false,
     fetch: true,
   })
   assert.deepEqual(manifest.network, {
@@ -25,14 +24,15 @@ test('declares the expected Athena manifest compatibility fields', async () => {
   })
 })
 
-test('pull returns the Athena plugin envelope with imported course data', async () => {
+test('agent tool returns imported course data', async () => {
   const overviewHtml = await readFixture('overview-fetch-response.html')
   const categoryHtml = await readFixture('category-fetch-response.html')
   const detailHtml = await readFixture('detail-fetch-response.html')
   const responses = [overviewHtml, categoryHtml, detailHtml]
   const requestedUrls: any[] = []
+  const tool = plugin.tools[0]
 
-  const result = await plugin.pull({
+  const result = await tool.execute({
     async getConfig() {
       return {
         language: 'en',
@@ -56,15 +56,17 @@ test('pull returns the Athena plugin envelope with imported course data', async 
       }
     },
   } as any)
+  const data = result.data as any
 
-  assert.equal(result.protocolVersion, 'v1')
+  assert.equal(tool.name, 'import_kiel_univis_courses')
+  assert.match(result.content, /Imported 1 Kiel UnivIS course\(s\) and 3 schedule\(s\)/)
   assert.ok(Array.isArray(result.warnings))
-  assert.equal(result.warnings!.length, 0)
-  assert.equal(result.courses!.length, 1)
-  assert.equal(result.schedules!.length, 3)
-  assert.equal(result.courses![0].code, 'infAdvCry-01a')
-  assert.equal(result.courses![0].metadata, null)
-  assert.equal(result.schedules![0].entityType, 'course')
+  assert.equal(result.warnings.length, 0)
+  assert.equal(data.courses.length, 1)
+  assert.equal(data.schedules.length, 3)
+  assert.equal(data.courses[0].code, 'infAdvCry-01a')
+  assert.equal(data.courses[0].metadata, null)
+  assert.equal(data.schedules[0].entityType, 'course')
   assert.equal(requestedUrls.length, 3)
   assert.deepEqual(
     requestedUrls.map(request => request.method),
@@ -72,14 +74,14 @@ test('pull returns the Athena plugin envelope with imported course data', async 
   )
 })
 
-test('pull uses a configurable request path while keeping the fixed UnivIS host', async () => {
+test('agent tool uses a configurable request path while keeping the fixed UnivIS host', async () => {
   const overviewHtml = await readFixture('overview-fetch-response.html')
   const categoryHtml = await readFixture('category-fetch-response.html')
   const detailHtml = await readFixture('detail-fetch-response.html')
   const responses = [overviewHtml, categoryHtml, detailHtml]
   const requestedUrls: any[] = []
 
-  await plugin.pull({
+  await plugin.tools[0].execute({
     async getConfig() {
       return {
         language: 'en',
@@ -116,26 +118,37 @@ test('pull uses a configurable request path while keeping the fixed UnivIS host'
   )
 })
 
-test('push returns Athena-compatible summary and ignores sessions', async () => {
-  const result = await plugin.push(
-    {} as any,
-    {
-      courses: [{ id: 'course-1' }] as any,
-      schedules: [{ id: 'schedule-1' }] as any,
-      sessions: [{ id: 'session-1' }] as any,
-    },
+test('agent tool input overrides saved config for one import', async () => {
+  const requestedUrls: any[] = []
+
+  await assert.rejects(
+    () =>
+      plugin.tools[0].execute(
+        {
+          async getConfig() {
+            return {
+              language: 'en',
+              semester: '2026s',
+              requestPath: '/formbot',
+            }
+          },
+          async fetch({ url, method }: { url: string; method: string }) {
+            requestedUrls.push({ url, method })
+            throw new Error('stop after first request')
+          },
+        } as any,
+        {
+          language: 'de',
+          semester: '2025w',
+          requestPath: '/catalog',
+        },
+      ),
+    /stop after first request/,
   )
 
-  assert.deepEqual(result, {
-    protocolVersion: 'v1',
-    summary: {
-      courses: 1,
-      schedules: 1,
-      sessions: 0,
-    },
-    warnings: [
-      'Kiel UnivIS push is metadata-only. Remote UnivIS data was not modified.',
-      'Ignored 1 session record(s) because the plugin does not write sessions.',
-    ],
-  })
+  const url = new URL(requestedUrls[0].url)
+  assert.equal(url.hostname, 'univis.uni-kiel.de')
+  assert.match(url.pathname, /^\/catalog\//)
+  assert.match(url.href, /lang_3Dde/)
+  assert.match(url.href, /sem_3D2025w/)
 })

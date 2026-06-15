@@ -9,7 +9,7 @@ import {
   getSessionTypeForKind,
   mapKindToCategory,
 } from '../parsing/univis-normalize.js'
-import { CourseRecord, ScheduleRecord, PluginPullResult } from '../types/athena.js'
+import { CourseRecord, KielUnivisImportData, ScheduleRecord } from '../types/athena.js'
 import { UnivisLectureDetail } from '../types/univis.js'
 
 function slugify(value: string) {
@@ -58,11 +58,10 @@ function parseKielSemester(semester: string | null) {
 export function buildKielCourseImport(
   lectureDetails: UnivisLectureDetail[],
   { university = 'Kiel University (CAU)', latestTerm = null }: { university?: string; latestTerm?: string | null } = {},
-): PluginPullResult {
+): KielUnivisImportData {
   const nowIso = new Date().toISOString()
   const courses: CourseRecord[] = []
   const schedules: ScheduleRecord[] = []
-  const sessions: any[] = []
 
   const latestSemester = parseKielSemester(latestTerm)
 
@@ -180,7 +179,6 @@ export function buildKielCourseImport(
   }
 
   return {
-    protocolVersion: 'v1',
     courses: courses.sort((left, right) => left.code.localeCompare(right.code)),
     schedules: schedules.sort(
       (left, right) =>
@@ -188,9 +186,6 @@ export function buildKielCourseImport(
         || getScheduleSortRank(left) - getScheduleSortRank(right)
         || left.dayOfWeek - right.dayOfWeek
         || left.startAt.localeCompare(right.startAt),
-    ),
-    sessions: sessions.sort((left, right) =>
-      (left.startAt || '').localeCompare(right.startAt || ''),
     ),
   }
 }
