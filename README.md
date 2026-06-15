@@ -1,6 +1,6 @@
 # Kiel UnivIS Athena Plugin
 
-Standalone Athena agent-tool plugin for importing courses, schedules, and exam dates from Kiel UnivIS.
+Standalone Athena agent-tool plugin for retrieving course, schedule, and exam information from Kiel UnivIS.
 
 To use this plugin with Athena, copy the repository into Athena's plugin directory as
 `plugins/kiel-univis-courses`.

@@ -6,7 +6,7 @@ import plugin from '../../src/index.js'
 
 test('exports the kiel univis plugin agent tool runtime', () => {
   assert.equal(Array.isArray(plugin.tools), true)
-  assert.equal(plugin.tools[0].name, 'import_kiel_univis_courses')
+  assert.equal(plugin.tools[0].name, 'retrieve_kiel_univis_courses')
   assert.equal(typeof plugin.tools[0].execute, 'function')
 })
 

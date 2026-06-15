@@ -24,7 +24,7 @@ test('declares the expected Athena agent tool manifest fields', async () => {
   })
 })
 
-test('agent tool returns imported course data', async () => {
+test('agent tool retrieves course data for review', async () => {
   const overviewHtml = await readFixture('overview-fetch-response.html')
   const categoryHtml = await readFixture('category-fetch-response.html')
   const detailHtml = await readFixture('detail-fetch-response.html')
@@ -58,8 +58,8 @@ test('agent tool returns imported course data', async () => {
   } as any)
   const data = result.data as any
 
-  assert.equal(tool.name, 'import_kiel_univis_courses')
-  assert.match(result.content, /Imported 1 Kiel UnivIS course\(s\) and 3 schedule\(s\)/)
+  assert.equal(tool.name, 'retrieve_kiel_univis_courses')
+  assert.match(result.content, /Retrieved 1 Kiel UnivIS course\(s\) and 3 schedule\(s\) for review/)
   assert.ok(Array.isArray(result.warnings))
   assert.equal(result.warnings.length, 0)
   assert.equal(data.courses.length, 1)
@@ -118,7 +118,7 @@ test('agent tool uses a configurable request path while keeping the fixed UnivIS
   )
 })
 
-test('agent tool input overrides saved config for one import', async () => {
+test('agent tool input overrides saved config for one retrieval', async () => {
   const requestedUrls: any[] = []
 
   await assert.rejects(

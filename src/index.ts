@@ -20,7 +20,7 @@ function getStringOption(
   return fallback
 }
 
-async function importKielUnivisCourses(
+async function retrieveKielUnivisCourses(
   context: PluginContext,
   input?: Record<string, unknown>,
 ): Promise<PluginToolResult> {
@@ -54,7 +54,7 @@ async function importKielUnivisCourses(
     : ''
 
   return {
-    content: `Imported ${courseCount} Kiel UnivIS course(s) and ${scheduleCount} schedule(s).${warningText}`,
+    content: `Retrieved ${courseCount} Kiel UnivIS course(s) and ${scheduleCount} schedule(s) for review.${warningText}`,
     data: {
       courses: result.courses ?? [],
       schedules: result.schedules ?? [],
@@ -100,15 +100,15 @@ export default {
 
   tools: [
     {
-      name: 'import_kiel_univis_courses',
-      description: 'Import Kiel University courses, schedules, and exam dates from UnivIS.',
+      name: 'retrieve_kiel_univis_courses',
+      description: 'Retrieve Kiel University courses, schedules, and exam dates from UnivIS for review.',
       parameters: {
         type: 'object',
         properties: {
           language: {
             type: 'string',
             enum: ['en', 'de'],
-            description: 'Preferred UnivIS language for this import.',
+            description: 'Preferred UnivIS language for this retrieval.',
           },
           semester: {
             type: 'string',
@@ -122,7 +122,7 @@ export default {
         },
         additionalProperties: false,
       },
-      execute: importKielUnivisCourses,
+      execute: retrieveKielUnivisCourses,
     },
   ],
 }

@@ -1,8 +1,8 @@
 {
   "id": "kiel-univis-courses",
   "name": "Kiel UnivIS Courses",
-  "version": "0.1.6",
-  "description": "Provides agent tools for importing courses, schedules, and exam dates from Kiel UnivIS.",
+  "version": "0.1.7",
+  "description": "Provides agent tools for retrieving course, schedule, and exam information from Kiel UnivIS.",
   "author": "Athena",
   "capabilities": [
     "agentTools"
