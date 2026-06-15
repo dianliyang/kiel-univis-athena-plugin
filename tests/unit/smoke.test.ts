@@ -29,13 +29,16 @@ test('ships the expected manifest metadata', async () => {
   )
 })
 
-test('defines a release packaging script for an MCP server zip asset', async () => {
+test('defines release packaging scripts for plugin and MCP zip assets', async () => {
   const pkg = JSON.parse(
     await fs.readFile(new URL('../../package.json', import.meta.url), 'utf8'),
   )
 
   assert.equal(typeof pkg.scripts['package:release'], 'string')
   assert.match(pkg.scripts['package:release'], /zip/i)
+  assert.match(pkg.scripts['package:release'], /kiel-univis-courses\.zip/)
+  assert.match(pkg.scripts['package:release'], /kiel-univis-mcp\.zip/)
+  assert.match(pkg.scripts['package:release'], /manifest\.json/)
   assert.match(pkg.scripts['package:release'], /dist\/mcp\.mjs/)
   assert.equal(pkg.bin['kiel-univis-mcp'], 'dist/mcp.mjs')
 })

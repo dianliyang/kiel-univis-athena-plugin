@@ -1,12 +1,12 @@
 {
   "name": "kiel-univis-athena-plugin",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "esbuild src/mcp.ts --bundle --platform=node --format=esm --outfile=dist/mcp.mjs --external:node:* --banner:js='#!/usr/bin/env node'",
     "test": "tsx --test tests/unit/*.test.ts",
-    "package:release": "rm -rf release && mkdir -p release/kiel-univis-mcp && npm run build && cp dist/mcp.mjs package.json README.md release/kiel-univis-mcp/ && cd release && zip -rq kiel-univis-mcp.zip kiel-univis-mcp",
+    "package:release": "rm -rf release && mkdir -p release/kiel-univis-courses release/kiel-univis-mcp && npm run build:plugin && npm run build && cp dist/index.mjs manifest.json release/kiel-univis-courses/ && cp dist/mcp.mjs package.json README.md release/kiel-univis-mcp/ && cd release && zip -rq kiel-univis-courses.zip kiel-univis-courses && zip -rq kiel-univis-mcp.zip kiel-univis-mcp",
     "build:plugin": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.mjs --external:node:*"
   },
   "devDependencies": {

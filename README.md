@@ -31,4 +31,7 @@ Athena can also override its local Kiel MCP path with `ATHENA_KIEL_UNIVIS_MCP_PA
 
 ## Release Packaging
 
-Run `npm run package:release` to build `release/kiel-univis-mcp.zip` for GitHub Releases. The archive contains `dist/mcp.mjs`, `package.json`, and this README.
+Run `npm run package:release` to build two GitHub Release assets:
+
+- `release/kiel-univis-courses.zip`: installable Athena plugin package with `manifest.json` and `index.mjs`.
+- `release/kiel-univis-mcp.zip`: standalone MCP server package with `mcp.mjs`, `package.json`, and this README.
