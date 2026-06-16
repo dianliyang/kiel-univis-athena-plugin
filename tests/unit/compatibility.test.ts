@@ -15,7 +15,7 @@ test('declares the expected Athena agent tool manifest fields', async () => {
 
   assert.deepEqual(manifest.capabilities, ['agentTools'])
   assert.deepEqual(manifest.permissions, {
-    getConfig: true,
+    getConfig: false,
     setConfig: false,
     fetch: true,
   })
@@ -86,11 +86,7 @@ test('agent tool uses a configurable request path while keeping the fixed UnivIS
 
   await plugin.tools[0].execute({
     async getConfig() {
-      return {
-        language: 'en',
-        semester: '2026s',
-        requestPath: '/catalog',
-      }
+      return null
     },
     async fetch(request: { url: string; method: string; body?: string }) {
       const { url } = request
@@ -109,7 +105,9 @@ test('agent tool uses a configurable request path while keeping the fixed UnivIS
         bodyText,
       }
     },
-  } as any)
+  } as any, {
+    requestPath: '/catalog',
+  })
 
   assert.match(
     requestedUrls[0].url,

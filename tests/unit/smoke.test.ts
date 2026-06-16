@@ -18,15 +18,8 @@ test('ships the expected manifest metadata', async () => {
   assert.equal(manifest.id, 'kiel-univis-courses')
   assert.ok(Array.isArray(manifest.capabilities))
   assert.ok(manifest.permissions)
-  assert.equal(manifest.permissions.getConfig, true)
+  assert.equal(manifest.permissions.getConfig, false)
   assert.equal(manifest.permissions.fetch, true)
-  assert.ok(
-    plugin.config.some(
-      field =>
-        field.key === 'requestPath'
-        && field.defaultValue === '/formbot',
-    ),
-  )
 })
 
 test('defines release packaging scripts for plugin and MCP zip assets', async () => {

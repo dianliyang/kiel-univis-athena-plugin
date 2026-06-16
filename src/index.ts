@@ -1,30 +1,10 @@
 import { fetchKielUnivisCourses } from './fetcher.js'
 import { PluginContext, PluginToolResult } from './types/athena.js'
 
-function getStringOption(
-  input: Record<string, unknown> | undefined,
-  config: Record<string, unknown>,
-  key: string,
-  fallback: string,
-) {
-  const inputValue = input?.[key]
-  if (typeof inputValue === 'string' && inputValue.trim().length > 0) {
-    return inputValue.trim()
-  }
-
-  const configValue = config[key]
-  if (typeof configValue === 'string' && configValue.trim().length > 0) {
-    return configValue.trim()
-  }
-
-  return fallback
-}
-
 async function retrieveKielUnivisCourses(
   context: PluginContext,
   input?: Record<string, unknown>,
 ): Promise<PluginToolResult> {
-  const config = (await context.getConfig()) ?? {}
   const result = await fetchKielUnivisCourses({
     fetchImpl: async (requestUrl, init) => {
       const response = await context.fetch({
@@ -46,10 +26,10 @@ async function retrieveKielUnivisCourses(
         },
       }
     },
-    language: getStringOption(input, config, 'language', 'en'),
-    semester: getStringOption(input, config, 'semester', '2026s'),
-    tdir: getStringOption(input, config, 'tdir', 'techn/infora/master'),
-    requestPath: getStringOption(input, config, 'requestPath', '/formbot'),
+    language: typeof input?.language === 'string' && input.language.trim() ? input.language.trim() : 'en',
+    semester: typeof input?.semester === 'string' && input.semester.trim() ? input.semester.trim() : '2026s',
+    tdir: typeof input?.tdir === 'string' && input.tdir.trim() ? input.tdir.trim() : 'techn/infora/master',
+    requestPath: typeof input?.requestPath === 'string' && input.requestPath.trim() ? input.requestPath.trim() : '/formbot',
   })
   const warnings = result.warnings ?? []
   const courseCount = result.courses?.length ?? 0
@@ -71,47 +51,6 @@ async function retrieveKielUnivisCourses(
 }
 
 export default {
-  config: [
-    {
-      key: 'language',
-      label: 'Language',
-      type: 'select',
-      defaultValue: 'en',
-      options: [
-        { value: 'en', label: 'English' },
-        { value: 'de', label: 'Deutsch' },
-      ],
-    },
-    {
-      key: 'semester',
-      label: 'Semester',
-      type: 'select',
-      defaultValue: '2026s',
-      options: [
-        { value: '2026s', label: '2026 Summer' },
-        { value: '2026w', label: '2026 Winter' },
-        { value: '2025s', label: '2025 Summer' },
-        { value: '2025w', label: '2025 Winter' },
-      ],
-    },
-    {
-      key: 'tdir',
-      label: 'UnivIS Directory',
-      type: 'text',
-      defaultValue: 'techn/infora/master',
-      placeholder: 'techn/infora/master',
-      description: 'UnivIS tdir path to retrieve.',
-    },
-    {
-      key: 'requestPath',
-      label: 'Request Path',
-      type: 'text',
-      defaultValue: '/formbot',
-      placeholder: '/formbot',
-      description: 'Override the UnivIS request path while keeping the host fixed to univis.uni-kiel.de.',
-    },
-  ],
-
   tools: [
     {
       name: 'retrieve_kiel_univis_courses',
