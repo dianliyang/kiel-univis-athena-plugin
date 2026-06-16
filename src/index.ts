@@ -44,6 +44,7 @@ async function retrieveKielUnivisCourses(
     },
     language: getStringOption(input, config, 'language', 'en'),
     semester: getStringOption(input, config, 'semester', '2026s'),
+    tdir: getStringOption(input, config, 'tdir', 'techn/infora/master'),
     requestPath: getStringOption(input, config, 'requestPath', '/formbot'),
   })
   const warnings = result.warnings ?? []
@@ -58,6 +59,7 @@ async function retrieveKielUnivisCourses(
     data: {
       courses: result.courses ?? [],
       schedules: result.schedules ?? [],
+      documents: result.documents ?? [],
       warnings,
     },
     warnings,
@@ -89,6 +91,14 @@ export default {
       ],
     },
     {
+      key: 'tdir',
+      label: 'UnivIS Directory',
+      type: 'text',
+      defaultValue: 'techn/infora/master',
+      placeholder: 'techn/infora/master',
+      description: 'UnivIS tdir path to retrieve.',
+    },
+    {
       key: 'requestPath',
       label: 'Request Path',
       type: 'text',
@@ -118,6 +128,10 @@ export default {
           requestPath: {
             type: 'string',
             description: 'Optional UnivIS request path. The host remains univis.uni-kiel.de.',
+          },
+          tdir: {
+            type: 'string',
+            description: 'Optional UnivIS tdir path, for example techn/infora/master.',
           },
         },
         additionalProperties: false,

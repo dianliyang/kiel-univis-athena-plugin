@@ -45,6 +45,17 @@ export interface UnivisCategory {
   url: string
 }
 
+export interface UnivisDocument {
+  title: string
+  url: string
+}
+
+export interface UnivisDegreeNode {
+  title: string | null
+  documents: UnivisDocument[]
+  categories: UnivisCategory[]
+}
+
 export interface UnivisLectureRow {
   code: string | null
   title: string

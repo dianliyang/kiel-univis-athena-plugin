@@ -141,6 +141,7 @@ test('agent tool input overrides saved config for one retrieval', async () => {
           language: 'de',
           semester: '2025w',
           requestPath: '/catalog',
+          tdir: 'techn/infora/master/theore',
         },
       ),
     /stop after first request/,
@@ -151,4 +152,5 @@ test('agent tool input overrides saved config for one retrieval', async () => {
   assert.match(url.pathname, /^\/catalog\//)
   assert.match(url.href, /lang_3Dde/)
   assert.match(url.href, /sem_3D2025w/)
+  assert.match(url.href, /tdir_3Dtechn_2Finfora_2Fmaster_2Ftheore/)
 })

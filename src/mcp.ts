@@ -7,11 +7,13 @@ import { CourseRecord, ScheduleRecord } from './types/athena.js'
 
 const DEFAULT_LANGUAGE = 'en'
 const DEFAULT_SEMESTER = '2026s'
+const DEFAULT_TDIR = 'techn/infora/master'
 const DEFAULT_REQUEST_PATH = '/formbot'
 
 const UnivisQuerySchema = z.object({
   language: z.enum(['en', 'de']).default(DEFAULT_LANGUAGE).describe('Preferred UnivIS language.'),
   semester: z.string().default(DEFAULT_SEMESTER).describe('UnivIS semester identifier, for example 2026s or 2025w.'),
+  tdir: z.string().default(DEFAULT_TDIR).describe('UnivIS tdir path, for example techn/infora/master.'),
   requestPath: z.string().default(DEFAULT_REQUEST_PATH).describe('Optional UnivIS request path. The host remains univis.uni-kiel.de.'),
 })
 
@@ -31,6 +33,7 @@ interface CourseListResult {
   content: string
   courses: CourseRecord[]
   schedules: ScheduleRecord[]
+  documents: Array<{ title: string; url: string }>
   warnings: string[]
 }
 
@@ -38,6 +41,7 @@ function normalizeInput(input: Partial<UnivisQueryInput>): UnivisQueryInput {
   return {
     language: input.language ?? DEFAULT_LANGUAGE,
     semester: input.semester ?? DEFAULT_SEMESTER,
+    tdir: input.tdir ?? DEFAULT_TDIR,
     requestPath: input.requestPath ?? DEFAULT_REQUEST_PATH,
   }
 }
@@ -104,6 +108,7 @@ async function retrieveCourses(
     fetchImpl: options.fetchImpl ?? fetch,
     language: normalized.language,
     semester: normalized.semester,
+    tdir: normalized.tdir,
     requestPath: normalized.requestPath,
   })
   const courses = result.courses ?? []
@@ -119,6 +124,7 @@ async function retrieveCourses(
     }),
     courses,
     schedules,
+    documents: result.documents ?? [],
     warnings,
   }
 }
@@ -167,6 +173,7 @@ function toMcpToolResult(result: CourseListResult) {
     structuredContent: {
       courses: result.courses,
       schedules: result.schedules,
+      documents: result.documents,
       warnings: result.warnings,
     },
   }

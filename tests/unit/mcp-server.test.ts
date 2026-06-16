@@ -72,3 +72,28 @@ test('search tool filters the retrieved course list', async () => {
   assert.match(result.content, /cryptography/i)
   assert.match(result.content, /Advanced Cryptography/i)
 })
+
+test('list tool forwards the requested UnivIS directory', async () => {
+  const requestedUrls: string[] = []
+
+  await assert.rejects(
+    () =>
+      listKielUnivisCoursesTool.handler(
+        {
+          language: 'en',
+          semester: '2026w',
+          requestPath: '/formbot',
+          tdir: 'techn/infora/master/master_1',
+        },
+        {
+          fetchImpl: async (url: string) => {
+            requestedUrls.push(url)
+            throw new Error('stop after first request')
+          },
+        },
+      ),
+    /stop after first request/,
+  )
+
+  assert.match(requestedUrls[0], /tdir_3Dtechn_2Finfora_2Fmaster_2Fmaster_1/)
+})

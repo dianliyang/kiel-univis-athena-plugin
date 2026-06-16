@@ -92,5 +92,6 @@ export interface KielUnivisImportData {
   courses?: CourseRecord[]
   schedules?: ScheduleRecord[]
   sessions?: SessionRecord[]
+  documents?: Array<{ title: string; url: string }>
   warnings?: string[]
 }

@@ -1,7 +1,6 @@
 import { decodeHtml, stripHtmlWithLineBreaks, stripTags } from '../utils/entities.js'
 import {
   combineDefinitionSections,
-  COURSE_CATEGORY_TITLES,
   extractDefinitionContent,
   extractLectureLanguage,
   getCategoryPriority,
@@ -14,14 +13,15 @@ import {
   parseExamLines,
   parseTitleCode,
 } from './univis-normalize.js'
-import { UnivisCategory, UnivisLectureDetail, UnivisLectureRow } from '../types/univis.js'
+import { UnivisCategory, UnivisDegreeNode, UnivisLectureDetail, UnivisLectureRow } from '../types/univis.js'
 
 export function buildKielOverviewUrl({
   language = 'en',
   semester = '2026s',
+  tdir = 'techn/infora/master',
   requestPath = '/formbot',
 } = {}): string {
-  const dsc = `dsc=anew/tlecture&tdir=techn/infora/master&lang=${language}&ref=tlecture&sem=${semester}`
+  const dsc = `dsc=anew/tlecture&tdir=${tdir}&lang=${language}&ref=tlecture&sem=${semester}`
   const trimmedRequestPath = `${requestPath}`.trim()
   const normalizedRequestPath = !trimmedRequestPath || trimmedRequestPath === '/'
     ? '/formbot/'
@@ -40,12 +40,29 @@ export function parseOverviewCategories(html: string, sourceBaseUrl: string): Un
   }))
 }
 
+export function parseDegreeNode(html: string, sourceBaseUrl: string): UnivisDegreeNode {
+  const title = stripTags(html.match(/<h2>([\s\S]*?)<\/h2>/i)?.[1] ?? '').trim() || null
+  const documents = Array.from(
+    html.matchAll(/<a\s+href="([^"]+\.pdf[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi),
+    match => ({
+      title: stripTags(match[2]).trim(),
+      url: new URL(decodeHtml(match[1]), sourceBaseUrl).toString(),
+    }),
+  ).filter(document => document.title)
+
+  return {
+    title,
+    documents,
+    categories: parseOverviewCategories(html, sourceBaseUrl),
+  }
+}
+
 export function parseCategoryLectureRows(
   html: string,
   { categoryTitle, sourceBaseUrl = 'https://univis.uni-kiel.de' }: { categoryTitle: string; sourceBaseUrl?: string }
 ): UnivisLectureRow[] {
   return Array.from(html.matchAll(
-    /<h4>\s*<a href="([^"]+)">([\s\S]*?)<\/a><\/h4>\s*<small>([\s\S]*?)<\/small>/gi,
+    /<h4>\s*<a href="([^"]+)">([\s\S]*?)<\/a>\s*<\/h4>\s*<small>([\s\S]*?)<\/small>/gi,
   ), (match) => {
     const titleData = parseTitleCode(match[2])
     return {
@@ -60,7 +77,6 @@ export function parseCategoryLectureRows(
     .filter(
       lecture =>
         lecture.code
-        && COURSE_CATEGORY_TITLES.has(lecture.categoryTitle)
         && !isExerciseTitle(lecture.rawTitle),
     )
 }

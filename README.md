@@ -8,7 +8,7 @@ It is read-only: tools return course information for review and do not import or
 - `list_kiel_univis_courses`: retrieve the Kiel UnivIS course list for a semester.
 - `search_kiel_univis_courses`: retrieve the course list and filter it by title, code, instructor, topic, language, or category.
 
-Both tools accept optional `language`, `semester`, and `requestPath` arguments. The UnivIS host stays fixed to `univis.uni-kiel.de`.
+Both tools accept optional `language`, `semester`, `tdir`, and `requestPath` arguments. The UnivIS host stays fixed to `univis.uni-kiel.de`.
 
 ## Development
 

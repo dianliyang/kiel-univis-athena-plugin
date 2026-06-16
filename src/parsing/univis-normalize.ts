@@ -68,6 +68,8 @@ export function mapKindToCategory(kindLabel: string | null | undefined): string 
       return 'academic.reading'
     case 'project':
       return 'academic.project'
+    case 'colloquium':
+      return 'academic.meeting'
     case 'meeting':
       return 'academic.meeting'
     case 'review':
@@ -80,6 +82,15 @@ export function mapKindToCategory(kindLabel: string | null | undefined): string 
 }
 
 export function getSessionTypeForKind(kindLabel: string | null | undefined): string {
+  if (/^Seminar$/i.test(kindLabel ?? '')) {
+    return 'seminar'
+  }
+  if (/^Project$/i.test(kindLabel ?? '')) {
+    return 'project'
+  }
+  if (/^Colloquium$/i.test(kindLabel ?? '')) {
+    return 'meeting'
+  }
   if (/^Practical Exercise$/i.test(kindLabel ?? '')) {
     return 'lab'
   }
@@ -104,14 +115,23 @@ export function getExamDisplayLabel(label: string): string {
 }
 
 export function getPrimaryKindLabel(detailBlockHtml: string, headingText: string): string {
-  const detailKind = stripTags(detailBlockHtml).match(
-    /^(Lecture|Exercise|Practical Exercise|Tutorial)\b/i,
+  const detailKind = stripTags(detailBlockHtml).trim().match(
+    /^(Lecture|Seminar|Project|Colloquium|Exercise|Practical Exercise|Tutorial)\b/i,
   )?.[1]
   const headingKind = normalizeHeadingText(headingText).match(
-    /^(Exercise|Practical Exercise|Tutorial):/i,
+    /^(Seminar|Project|Colloquium|Exercise|Practical Exercise|Tutorial):/i,
   )?.[1]
   const rawKind = detailKind ?? headingKind ?? 'Lecture'
 
+  if (/^Seminar$/i.test(rawKind)) {
+    return 'Seminar'
+  }
+  if (/^Project$/i.test(rawKind)) {
+    return 'Project'
+  }
+  if (/^Colloquium$/i.test(rawKind)) {
+    return 'Colloquium'
+  }
   if (/^Practical Exercise$/i.test(rawKind)) {
     return 'Practical Exercise'
   }

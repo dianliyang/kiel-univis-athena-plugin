@@ -1,13 +1,12 @@
 import { resolveAssignedLectureSchedules } from './parsing/assigned-resolution.js'
 import { buildKielCourseImport } from './mapping/athena-map.js'
 import { readHtmlResponse } from './utils/entities.js'
-import { COURSE_CATEGORY_TITLES } from './parsing/univis-normalize.js'
 import {
   buildKielOverviewUrl,
   mergeLectureSummaries,
   parseCategoryLectureRows,
+  parseDegreeNode,
   parseLectureDetailHtml,
-  parseOverviewCategories,
 } from './parsing/univis-parse.js'
 import { KielUnivisImportData } from './types/athena.js'
 
@@ -15,23 +14,26 @@ export async function fetchKielUnivisCourses({
   fetchImpl = fetch,
   language = 'en',
   semester = '2026s',
+  tdir = 'techn/infora/master',
   requestPath = '/formbot',
   sourceBaseUrl = 'https://univis.uni-kiel.de',
 }: {
   fetchImpl?: (url: string) => Promise<any>
   language?: string
   semester?: string
+  tdir?: string
   requestPath?: string
   sourceBaseUrl?: string
 } = {}): Promise<KielUnivisImportData> {
   const overviewResponse = await fetchImpl(
-    buildKielOverviewUrl({ language, semester, requestPath }),
+    buildKielOverviewUrl({ language, semester, tdir, requestPath }),
   )
   const overviewHtml = await readHtmlResponse(overviewResponse)
-  const categories = parseOverviewCategories(
+  const degreeNode = parseDegreeNode(
     overviewHtml,
     sourceBaseUrl,
-  ).filter(category => COURSE_CATEGORY_TITLES.has(category.title))
+  )
+  const categories = degreeNode.categories
 
   const summaries = []
   const warnings: string[] = []
@@ -91,6 +93,7 @@ export async function fetchKielUnivisCourses({
 
   return {
     ...result,
+    documents: degreeNode.documents,
     warnings,
   }
 }
