@@ -68,7 +68,12 @@ export interface SessionRecord {
 
 export interface PluginContext {
   getConfig: () => Promise<Record<string, unknown>>
-  fetch: (options: { url: string; method: string }) => Promise<{
+  fetch: (options: {
+    url: string
+    method: string
+    headers?: Record<string, string>
+    body?: string
+  }) => Promise<{
     status: number
     headers: Record<string, string>
     bodyText: string

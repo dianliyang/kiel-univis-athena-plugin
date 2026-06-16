@@ -19,18 +19,89 @@ export function buildKielOverviewUrl({
   language = 'en',
   semester = '2026s',
   tdir = 'techn/infora/master',
-  requestPath = '/formbot',
+  requestPath = '/form',
 } = {}): string {
-  const dsc = `dsc=anew/tlecture&tdir=${tdir}&lang=${language}&ref=tlecture&sem=${semester}`
-  const trimmedRequestPath = `${requestPath}`.trim()
-  const normalizedRequestPath = !trimmedRequestPath || trimmedRequestPath === '/'
-    ? '/formbot/'
-    : `${trimmedRequestPath.startsWith('/') ? trimmedRequestPath : `/${trimmedRequestPath}`}${trimmedRequestPath.endsWith('/') ? '' : '/'}`
+  return buildKielOverviewRequest({ language, semester, tdir, requestPath }).url
+}
 
-  return new URL(
-    `${normalizedRequestPath}${encodeURIComponent(dsc).replace(/%/g, '_')}`,
-    'https://univis.uni-kiel.de',
-  ).toString()
+export function normalizeUnivisSemester(value = '2026s') {
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, '')
+  const directMatch = normalized.match(/^(\d{4})([sw])$/)
+  if (directMatch) {
+    return `${directMatch[1]}${directMatch[2]}`
+  }
+
+  const winterMatch = normalized.match(/^(?:ws|wintersemester|winter)(\d{4})(?:\/\d{2})?$/)
+  if (winterMatch) {
+    return `${winterMatch[1]}w`
+  }
+
+  const summerMatch = normalized.match(/^(?:ss|sommersemester|summer)(\d{4})$/)
+  if (summerMatch) {
+    return `${summerMatch[1]}s`
+  }
+
+  return normalized || '2026s'
+}
+
+function normalizeUnivisRequestPath(value = '/form') {
+  const trimmed = value.trim()
+  if (!trimmed || trimmed === '/') {
+    return '/form'
+  }
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+}
+
+export function buildKielOverviewRequest({
+  language = 'en',
+  semester = '2026s',
+  tdir = 'techn/infora/master',
+  requestPath = '/form',
+} = {}): { url: string; init: RequestInit } {
+  const normalizedSemester = normalizeUnivisSemester(semester)
+  const url = new URL(normalizeUnivisRequestPath(requestPath), 'https://univis.uni-kiel.de')
+  const form = new URLSearchParams()
+  form.set('__s', '1')
+  form.set('dsc', 'anew/unihd')
+  form.set('donedef', '1')
+  if (language === 'en') {
+    form.set('submitimg-English', 'anew/unihd-topnav:anew/unihd:lang_en')
+    form.set('English.x', '13')
+    form.set('English.y', '3')
+  }
+  form.set('search', 'lecture')
+  form.set('submitimg-Search', 'anew/unihd-topnav:anew/unihd:search')
+  form.set('semto', normalizedSemester)
+  form.set('submitimg-Semester', 'anew/unihd-topnav:anew/unihd:setsem')
+  form.set('setsem_jump', 'anew/tlecture')
+  form.set('wildto', 'anew/lecformat')
+  form.set('lecformat', 'anew/tlecture')
+  form.set('submitimg-hinzufügen', 'anew/lecformat:anew/lecformat:addlecs')
+  form.set('submitimg-löschen', 'anew/lecformat:anew/lecformat:remlecs')
+  form.set('submitimg-einschränken', 'anew/lecformat:anew/lecformat:redlecs_nosearch')
+  form.set('ref', 'tlecture')
+  form.set('anonymous', '1')
+  form.set('sem', normalizedSemester)
+  form.set('tdir', tdir)
+  form.set('__e', '620')
+
+  return {
+    url: url.toString(),
+    init: {
+      method: 'POST',
+      headers: {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'accept-language': language === 'en' ? 'en-US,en;q=0.9' : 'de-DE,de;q=0.9,en;q=0.8',
+        'cache-control': 'max-age=0',
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: 'https://univis.uni-kiel.de',
+        referer: 'https://univis.uni-kiel.de/form',
+        'upgrade-insecure-requests': '1',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome Safari/537.36',
+      },
+      body: form.toString(),
+    },
+  }
 }
 
 export function parseOverviewCategories(html: string, sourceBaseUrl: string): UnivisCategory[] {

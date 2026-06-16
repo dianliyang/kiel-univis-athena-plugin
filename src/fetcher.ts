@@ -2,7 +2,7 @@ import { resolveAssignedLectureSchedules } from './parsing/assigned-resolution.j
 import { buildKielCourseImport } from './mapping/athena-map.js'
 import { readHtmlResponse } from './utils/entities.js'
 import {
-  buildKielOverviewUrl,
+  buildKielOverviewRequest,
   mergeLectureSummaries,
   parseCategoryLectureRows,
   parseDegreeNode,
@@ -10,24 +10,25 @@ import {
 } from './parsing/univis-parse.js'
 import { KielUnivisImportData } from './types/athena.js'
 
+type FetchLike = (url: string, init?: RequestInit) => Promise<any>
+
 export async function fetchKielUnivisCourses({
   fetchImpl = fetch,
   language = 'en',
   semester = '2026s',
   tdir = 'techn/infora/master',
-  requestPath = '/formbot',
+  requestPath = '/form',
   sourceBaseUrl = 'https://univis.uni-kiel.de',
 }: {
-  fetchImpl?: (url: string) => Promise<any>
+  fetchImpl?: FetchLike
   language?: string
   semester?: string
   tdir?: string
   requestPath?: string
   sourceBaseUrl?: string
 } = {}): Promise<KielUnivisImportData> {
-  const overviewResponse = await fetchImpl(
-    buildKielOverviewUrl({ language, semester, tdir, requestPath }),
-  )
+  const overviewRequest = buildKielOverviewRequest({ language, semester, tdir, requestPath })
+  const overviewResponse = await fetchImpl(overviewRequest.url, overviewRequest.init)
   const overviewHtml = await readHtmlResponse(overviewResponse)
   const degreeNode = parseDegreeNode(
     overviewHtml,

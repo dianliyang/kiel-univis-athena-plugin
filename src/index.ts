@@ -26,10 +26,14 @@ async function retrieveKielUnivisCourses(
 ): Promise<PluginToolResult> {
   const config = (await context.getConfig()) ?? {}
   const result = await fetchKielUnivisCourses({
-    fetchImpl: async (requestUrl) => {
+    fetchImpl: async (requestUrl, init) => {
       const response = await context.fetch({
         url: String(requestUrl),
-        method: 'GET',
+        method: String(init?.method ?? 'GET'),
+        headers: init?.headers && !Array.isArray(init.headers)
+          ? init.headers as Record<string, string>
+          : undefined,
+        body: typeof init?.body === 'string' ? init.body : undefined,
       })
       return {
         headers: {

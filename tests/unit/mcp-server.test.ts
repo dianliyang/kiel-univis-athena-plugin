@@ -74,20 +74,20 @@ test('search tool filters the retrieved course list', async () => {
 })
 
 test('list tool forwards the requested UnivIS directory', async () => {
-  const requestedUrls: string[] = []
+  const requests: Array<{ url: string, init?: RequestInit }> = []
 
   await assert.rejects(
     () =>
       listKielUnivisCoursesTool.handler(
         {
           language: 'en',
-          semester: '2026w',
-          requestPath: '/formbot',
+          semester: 'ws2026/27',
+          requestPath: '/form',
           tdir: 'techn/infora/master/master_1',
         },
         {
-          fetchImpl: async (url: string) => {
-            requestedUrls.push(url)
+          fetchImpl: async (url: string, init?: RequestInit) => {
+            requests.push({ url, init })
             throw new Error('stop after first request')
           },
         },
@@ -95,5 +95,11 @@ test('list tool forwards the requested UnivIS directory', async () => {
     /stop after first request/,
   )
 
-  assert.match(requestedUrls[0], /tdir_3Dtechn_2Finfora_2Fmaster_2Fmaster_1/)
+  assert.equal(requests[0].url, 'https://univis.uni-kiel.de/form')
+  assert.equal(requests[0].init?.method, 'POST')
+  assert.equal(requests[0].init?.headers?.['content-type' as keyof HeadersInit], 'application/x-www-form-urlencoded')
+  assert.match(String(requests[0].init?.body), /sem=2026w/)
+  assert.match(String(requests[0].init?.body), /semto=2026w/)
+  assert.match(String(requests[0].init?.body), /tdir=techn%2Finfora%2Fmaster%2Fmaster_1/)
+  assert.match(String(requests[0].init?.body), /lecformat=anew%2Ftlecture/)
 })

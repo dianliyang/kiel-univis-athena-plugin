@@ -3,16 +3,17 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 
 import { fetchKielUnivisCourses } from './fetcher.js'
+import { normalizeUnivisSemester } from './parsing/univis-parse.js'
 import { CourseRecord, ScheduleRecord } from './types/athena.js'
 
 const DEFAULT_LANGUAGE = 'en'
 const DEFAULT_SEMESTER = '2026s'
 const DEFAULT_TDIR = 'techn/infora/master'
-const DEFAULT_REQUEST_PATH = '/formbot'
+const DEFAULT_REQUEST_PATH = '/form'
 
 const UnivisQuerySchema = z.object({
   language: z.enum(['en', 'de']).default(DEFAULT_LANGUAGE).describe('Preferred UnivIS language.'),
-  semester: z.string().default(DEFAULT_SEMESTER).describe('UnivIS semester identifier, for example 2026s or 2025w.'),
+  semester: z.string().default(DEFAULT_SEMESTER).describe('UnivIS semester identifier, for example 2026s or 2026w. Use 2026w for winter 2026/27, not ws2026/27.'),
   tdir: z.string().default(DEFAULT_TDIR).describe('UnivIS tdir path, for example techn/infora/master.'),
   requestPath: z.string().default(DEFAULT_REQUEST_PATH).describe('Optional UnivIS request path. The host remains univis.uni-kiel.de.'),
 })
@@ -23,7 +24,7 @@ const UnivisSearchSchema = UnivisQuerySchema.extend({
 
 type UnivisQueryInput = z.infer<typeof UnivisQuerySchema>
 type UnivisSearchInput = z.infer<typeof UnivisSearchSchema>
-type FetchLike = (url: string) => Promise<Response>
+type FetchLike = (url: string, init?: RequestInit) => Promise<Response>
 
 interface ToolHandlerOptions {
   fetchImpl?: FetchLike
@@ -40,7 +41,7 @@ interface CourseListResult {
 function normalizeInput(input: Partial<UnivisQueryInput>): UnivisQueryInput {
   return {
     language: input.language ?? DEFAULT_LANGUAGE,
-    semester: input.semester ?? DEFAULT_SEMESTER,
+    semester: normalizeUnivisSemester(input.semester ?? DEFAULT_SEMESTER),
     tdir: input.tdir ?? DEFAULT_TDIR,
     requestPath: input.requestPath ?? DEFAULT_REQUEST_PATH,
   }

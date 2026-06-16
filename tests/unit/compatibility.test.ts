@@ -39,8 +39,9 @@ test('agent tool retrieves course data for review', async () => {
         semester: '2026s',
       }
     },
-    async fetch({ url, method }: { url: string; method: string }) {
-      requestedUrls.push({ url, method })
+    async fetch(request: { url: string; method: string; body?: string }) {
+      const { url } = request
+      requestedUrls.push(request)
       const bodyText = responses.shift()
       if (!bodyText) {
         throw new Error(`Unexpected fetch: ${url}`)
@@ -70,8 +71,10 @@ test('agent tool retrieves course data for review', async () => {
   assert.equal(requestedUrls.length, 3)
   assert.deepEqual(
     requestedUrls.map(request => request.method),
-    ['GET', 'GET', 'GET'],
+    ['POST', 'GET', 'GET'],
   )
+  assert.match(requestedUrls[0].body, /sem=2026s/)
+  assert.match(requestedUrls[0].body, /tdir=techn%2Finfora%2Fmaster/)
 })
 
 test('agent tool uses a configurable request path while keeping the fixed UnivIS host', async () => {
@@ -89,8 +92,9 @@ test('agent tool uses a configurable request path while keeping the fixed UnivIS
         requestPath: '/catalog',
       }
     },
-    async fetch({ url, method }: { url: string; method: string }) {
-      requestedUrls.push({ url, method })
+    async fetch(request: { url: string; method: string; body?: string }) {
+      const { url } = request
+      requestedUrls.push(request)
       const bodyText = responses.shift()
       if (!bodyText) {
         throw new Error(`Unexpected fetch: ${url}`)
@@ -109,13 +113,14 @@ test('agent tool uses a configurable request path while keeping the fixed UnivIS
 
   assert.match(
     requestedUrls[0].url,
-    /^https:\/\/univis\.uni-kiel\.de\/catalog\//,
+    /^https:\/\/univis\.uni-kiel\.de\/catalog$/,
   )
   assert.equal(new URL(requestedUrls[0].url).hostname, 'univis.uni-kiel.de')
   assert.deepEqual(
     requestedUrls.map(request => request.method),
-    ['GET', 'GET', 'GET'],
+    ['POST', 'GET', 'GET'],
   )
+  assert.match(requestedUrls[0].body, /sem=2026s/)
 })
 
 test('agent tool input overrides saved config for one retrieval', async () => {
@@ -132,8 +137,8 @@ test('agent tool input overrides saved config for one retrieval', async () => {
               requestPath: '/formbot',
             }
           },
-          async fetch({ url, method }: { url: string; method: string }) {
-            requestedUrls.push({ url, method })
+          async fetch(request: { url: string; method: string; body?: string }) {
+            requestedUrls.push(request)
             throw new Error('stop after first request')
           },
         } as any,
@@ -149,8 +154,8 @@ test('agent tool input overrides saved config for one retrieval', async () => {
 
   const url = new URL(requestedUrls[0].url)
   assert.equal(url.hostname, 'univis.uni-kiel.de')
-  assert.match(url.pathname, /^\/catalog\//)
-  assert.match(url.href, /lang_3Dde/)
-  assert.match(url.href, /sem_3D2025w/)
-  assert.match(url.href, /tdir_3Dtechn_2Finfora_2Fmaster_2Ftheore/)
+  assert.equal(url.pathname, '/catalog')
+  assert.equal(requestedUrls[0].method, 'POST')
+  assert.match(requestedUrls[0].body, /sem=2025w/)
+  assert.match(requestedUrls[0].body, /tdir=techn%2Finfora%2Fmaster%2Ftheore/)
 })

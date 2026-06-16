@@ -60,10 +60,7 @@ test('dedupes assigned lecture pages and keeps the authoritative schedule range'
   const categoryHtml = await readFixture('category-assigned-fetch-response.html')
   const fetchCalls: string[] = []
   const responsesByUrl = new Map([
-    [
-      'https://univis.uni-kiel.de/formbot/dsc_3Danew_2Ftlecture_26tdir_3Dtechn_2Finfora_2Fmaster_26lang_3Den_26ref_3Dtlecture_26sem_3D2026s',
-      overviewHtml,
-    ],
+    ['https://univis.uni-kiel.de/form', overviewHtml],
     ['https://univis.uni-kiel.de/category', categoryHtml],
     ['https://univis.uni-kiel.de/category-assigned', categoryHtml],
     ['https://univis.uni-kiel.de/detail', detailHtml],
@@ -71,9 +68,14 @@ test('dedupes assigned lecture pages and keeps the authoritative schedule range'
   ])
 
   const imported = await fetchKielUnivisCourses({
-    fetchImpl: async (url: string) => {
+    fetchImpl: async (url: string, init?: RequestInit) => {
       const normalizedUrl = String(url)
       fetchCalls.push(normalizedUrl)
+      if (normalizedUrl === 'https://univis.uni-kiel.de/form') {
+        assert.equal(init?.method, 'POST')
+        assert.match(String(init?.body), /sem=2026s/)
+        assert.match(String(init?.body), /tdir=techn%2Finfora%2Fmaster/)
+      }
       const bodyText = responsesByUrl.get(normalizedUrl)
       if (!bodyText) {
         throw new Error(`Unexpected URL: ${normalizedUrl}`)
