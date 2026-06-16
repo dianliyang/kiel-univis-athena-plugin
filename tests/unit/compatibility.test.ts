@@ -71,10 +71,10 @@ test('agent tool retrieves course data for review', async () => {
   assert.equal(requestedUrls.length, 3)
   assert.deepEqual(
     requestedUrls.map(request => request.method),
-    ['POST', 'GET', 'GET'],
+    ['GET', 'GET', 'GET'],
   )
-  assert.match(requestedUrls[0].body, /sem=2026s/)
-  assert.match(requestedUrls[0].body, /tdir=techn%2Finfora%2Fmaster/)
+  assert.match(requestedUrls[0].url, /sem=2026s/)
+  assert.match(requestedUrls[0].url, /tdir=techn%2Finfora%2Fmaster/)
 })
 
 test('agent tool uses a configurable request path while keeping the fixed UnivIS host', async () => {
@@ -113,14 +113,14 @@ test('agent tool uses a configurable request path while keeping the fixed UnivIS
 
   assert.match(
     requestedUrls[0].url,
-    /^https:\/\/univis\.uni-kiel\.de\/catalog$/,
+    /^https:\/\/univis\.uni-kiel\.de\/catalog/,
   )
   assert.equal(new URL(requestedUrls[0].url).hostname, 'univis.uni-kiel.de')
   assert.deepEqual(
     requestedUrls.map(request => request.method),
-    ['POST', 'GET', 'GET'],
+    ['GET', 'GET', 'GET'],
   )
-  assert.match(requestedUrls[0].body, /sem=2026s/)
+  assert.match(requestedUrls[0].url, /sem=2026s/)
 })
 
 test('agent tool input overrides saved config for one retrieval', async () => {
@@ -155,7 +155,7 @@ test('agent tool input overrides saved config for one retrieval', async () => {
   const url = new URL(requestedUrls[0].url)
   assert.equal(url.hostname, 'univis.uni-kiel.de')
   assert.equal(url.pathname, '/catalog')
-  assert.equal(requestedUrls[0].method, 'POST')
-  assert.match(requestedUrls[0].body, /sem=2025w/)
-  assert.match(requestedUrls[0].body, /tdir=techn%2Finfora%2Fmaster%2Ftheore/)
+  assert.equal(requestedUrls[0].method, 'GET')
+  assert.match(requestedUrls[0].url, /sem=2025w/)
+  assert.match(requestedUrls[0].url, /tdir=techn%2Finfora%2Fmaster%2Ftheore/)
 })

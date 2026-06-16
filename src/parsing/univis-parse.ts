@@ -59,47 +59,33 @@ export function buildKielOverviewRequest({
   requestPath = '/form',
 } = {}): { url: string; init: RequestInit } {
   const normalizedSemester = normalizeUnivisSemester(semester)
+  
+  // Calculate dynamic __e parameter relative to 2024-10-04 base
+  const baseDate = new Date('2024-10-04')
+  const baseUtc = Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate())
+  const today = new Date()
+  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+  const eVal = Math.floor((todayUtc - baseUtc) / (1000 * 60 * 60 * 24))
+
   const url = new URL(normalizeUnivisRequestPath(requestPath), 'https://univis.uni-kiel.de')
-  const form = new URLSearchParams()
-  form.set('__s', '1')
-  form.set('dsc', 'anew/unihd')
-  form.set('donedef', '1')
-  if (language === 'en') {
-    form.set('submitimg-English', 'anew/unihd-topnav:anew/unihd:lang_en')
-    form.set('English.x', '13')
-    form.set('English.y', '3')
-  }
-  form.set('search', 'lecture')
-  form.set('submitimg-Search', 'anew/unihd-topnav:anew/unihd:search')
-  form.set('semto', normalizedSemester)
-  form.set('submitimg-Semester', 'anew/unihd-topnav:anew/unihd:setsem')
-  form.set('setsem_jump', 'anew/tlecture')
-  form.set('wildto', 'anew/lecformat')
-  form.set('lecformat', 'anew/tlecture')
-  form.set('submitimg-hinzufügen', 'anew/lecformat:anew/lecformat:addlecs')
-  form.set('submitimg-löschen', 'anew/lecformat:anew/lecformat:remlecs')
-  form.set('submitimg-einschränken', 'anew/lecformat:anew/lecformat:redlecs_nosearch')
-  form.set('ref', 'tlecture')
-  form.set('anonymous', '1')
-  form.set('sem', normalizedSemester)
-  form.set('tdir', tdir)
-  form.set('__e', '620')
+  url.searchParams.set('__s', '2')
+  url.searchParams.set('dsc', 'anew/tlecture')
+  url.searchParams.set('tdir', tdir)
+  url.searchParams.set('anonymous', '1')
+  url.searchParams.set('lang', language === 'de' ? 'de' : 'en')
+  url.searchParams.set('ref', 'tlecture')
+  url.searchParams.set('sem', normalizedSemester)
+  url.searchParams.set('__e', String(eVal))
 
   return {
     url: url.toString(),
     init: {
-      method: 'POST',
+      method: 'GET',
       headers: {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'accept-language': language === 'en' ? 'en-US,en;q=0.9' : 'de-DE,de;q=0.9,en;q=0.8',
-        'cache-control': 'max-age=0',
-        'content-type': 'application/x-www-form-urlencoded',
-        origin: 'https://univis.uni-kiel.de',
-        referer: 'https://univis.uni-kiel.de/form',
-        'upgrade-insecure-requests': '1',
         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome Safari/537.36',
       },
-      body: form.toString(),
     },
   }
 }

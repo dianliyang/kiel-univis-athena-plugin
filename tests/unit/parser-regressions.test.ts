@@ -60,7 +60,7 @@ test('dedupes assigned lecture pages and keeps the authoritative schedule range'
   const categoryHtml = await readFixture('category-assigned-fetch-response.html')
   const fetchCalls: string[] = []
   const responsesByUrl = new Map([
-    ['https://univis.uni-kiel.de/form', overviewHtml],
+    ['overview', overviewHtml],
     ['https://univis.uni-kiel.de/category', categoryHtml],
     ['https://univis.uni-kiel.de/category-assigned', categoryHtml],
     ['https://univis.uni-kiel.de/detail', detailHtml],
@@ -71,12 +71,15 @@ test('dedupes assigned lecture pages and keeps the authoritative schedule range'
     fetchImpl: async (url: string, init?: RequestInit) => {
       const normalizedUrl = String(url)
       fetchCalls.push(normalizedUrl)
-      if (normalizedUrl === 'https://univis.uni-kiel.de/form') {
-        assert.equal(init?.method, 'POST')
-        assert.match(String(init?.body), /sem=2026s/)
-        assert.match(String(init?.body), /tdir=techn%2Finfora%2Fmaster/)
+      let bodyText: string | undefined
+      if (normalizedUrl.startsWith('https://univis.uni-kiel.de/form') && !normalizedUrl.includes('exercise=')) {
+        assert.equal(init?.method, 'GET')
+        assert.match(normalizedUrl, /sem=2026s/)
+        assert.match(normalizedUrl, /tdir=techn%2Finfora%2Fmaster/)
+        bodyText = responsesByUrl.get('overview')
+      } else {
+        bodyText = responsesByUrl.get(normalizedUrl)
       }
-      const bodyText = responsesByUrl.get(normalizedUrl)
       if (!bodyText) {
         throw new Error(`Unexpected URL: ${normalizedUrl}`)
       }

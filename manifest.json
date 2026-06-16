@@ -1,7 +1,7 @@
 {
   "id": "kiel-univis-courses",
   "name": "Kiel UnivIS Courses",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Provides a read-only agent tool and MCP server for retrieving course, schedule, and exam information from Kiel UnivIS.",
   "author": "Athena",
   "capabilities": [

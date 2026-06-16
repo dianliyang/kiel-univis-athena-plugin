@@ -95,11 +95,8 @@ test('list tool forwards the requested UnivIS directory', async () => {
     /stop after first request/,
   )
 
-  assert.equal(requests[0].url, 'https://univis.uni-kiel.de/form')
-  assert.equal(requests[0].init?.method, 'POST')
-  assert.equal(requests[0].init?.headers?.['content-type' as keyof HeadersInit], 'application/x-www-form-urlencoded')
-  assert.match(String(requests[0].init?.body), /sem=2026w/)
-  assert.match(String(requests[0].init?.body), /semto=2026w/)
-  assert.match(String(requests[0].init?.body), /tdir=techn%2Finfora%2Fmaster%2Fmaster_1/)
-  assert.match(String(requests[0].init?.body), /lecformat=anew%2Ftlecture/)
+  assert.match(requests[0].url, /^https:\/\/univis\.uni-kiel\.de\/form/)
+  assert.equal(requests[0].init?.method, 'GET')
+  assert.match(requests[0].url, /sem=2026w/)
+  assert.match(requests[0].url, /tdir=techn%2Finfora%2Fmaster%2Fmaster_1/)
 })
